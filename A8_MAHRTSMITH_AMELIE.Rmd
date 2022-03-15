@@ -4,3 +4,56 @@ author: "Amelie"
 date: "15/03/2022"
 output: html_document
 ---
+
+```{r message = FALSE, warning = FALSE}
+library(dplyr)
+library(ape)
+library(ggtree)
+library(vegan) 
+library(ggplot2)
+library(cowplot)
+source ("./Input/theme_A8.txt")
+  theme_set(theme_A8())
+Dat <- read.csv("./Input/FloristicSurvey.csv", header = TRUE) 
+Dat$Location <- recode(Dat$Location, "i" = "Present", "o" = "Absent")
+PlDat <- select(Dat, Claytonia_virginiana:maianthenum_racemosum)  #which plants are present in a sample
+row.names(PlDat) <- Dat$ï..Quadrate  #sample IDs
+```
+
+1. What effect (if any) does garlic mustard have on the plant community? 
+  -does the presence of garlic mustard change the species that are present? 
+  
+```{r}
+Pl_binary <- PlDat
+Pl_binary[Pl_binary > 0] <- 1  #reformat the data as presence/absence of a plant species in each community
+Pl_dist<- dist(Pl_binary, method = 'binary')
+Pl_tree <- nj(Pl_dist)
+ggtree(Pl_tree, layout = 'rectangular') %<+% Dat + 
+  geom_tiplab(aes(colour = Location), size = 3.5) + 
+  guides(colour = guide_legend(title = expression(italic("A. petiolata"))))
+```
+
+# make your tree look better 
+
+Evidence is weak that presence/absence of A. petiolata affects the species present in a community (weak clustering) 
+
+
+2. What has a stronger effect on plant community: the presence/absence of garlic mustard or sampling population? 
+```{r}
+#using abundance data...
+Ab_dist <- vegdist(PlDat, method = 'bray', binary = FALSE)
+NMDS <- metaMDS(Ab_dist, k = 2)
+
+PDat <- data.frame(NMDS1 = NMDS$points[, 1],
+                   NMDS2 = NMDS$points[, 2],
+                   SampleID = Dat$ï..Quadrate, 
+                   Location = Dat$Location, 
+                   Population = as.character(Dat$Population))
+
+P1 <- qplot(x = NMDS1, y = NMDS2, colour = Population, data = PDat)
+P2 <- qplot(x = NMDS1, y = NMDS2, colour = Location, data = PDat)
+plot_grid(P1, P2)
+
+```
+
+Population appears to have a stronger influence on plant community than the presence or absence of garlic mustard. The communities in the same population are clustered. 
