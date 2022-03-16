@@ -41,7 +41,7 @@ ggtree(Pl_tree, layout = 'rectangular') %<+% Dat +
       
 **Figure 1.** Clustering of plant communities based on the species present.   
    
-Garlic mustard has a weak effect on plant community composition. Fig. 1 shows that there is some clustering of communities by presence or absence of *A. petiolata*. This suggests that for groups of plant communities that are broadly similar, the presence of *A. petiolata* can be used to differentiate between them. However, if *A. petiolata* had a biologically relevant impact on plant community composition---i.e., significantly affected the presence/absence of other species---we would expect to see just two distinct clusters of plant communities: an *A. petiolata* present group and an *A. petiolata* absent group.    
+Garlic mustard has a weak effect on plant community composition. Fig. 1 shows that there is some clustering of communities by presence or absence of *A. petiolata*. This suggests that for groups of plant communities that are broadly similar, the presence of *A. petiolata* can be used to differentiate between them. However, if *A. petiolata* significantly affected the presence or absence of other species, we would expect to see two distinct clusters of plant communities: an *A. petiolata* present group and an *A. petiolata* absent group.    
     
 The floristic survey included abundance of plant species in addition to the community composition, which allows for a more in-depth analysis of the factors affecting plant community structure. For example, what has a stronger effect on plant community: the presence or absence of garlic mustard, or the sampling population?   
     
