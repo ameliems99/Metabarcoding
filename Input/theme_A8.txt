@@ -9,7 +9,9 @@ theme_A8 <- function (base_size = 12, base_family = "") {
       axis.ticks = element_blank(), 
       panel.background = element_rect(fill="white"),
       panel.border = element_blank(),
-      plot.title=element_text(face="bold", size=20),
-      legend.position="right"
+      plot.title = element_text(face="bold", size=20),
+      legend.position = "right",
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 8)
     ) 
 }

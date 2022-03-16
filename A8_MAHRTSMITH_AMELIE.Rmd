@@ -1,11 +1,14 @@
 ---
-title: "Community Ecology"
-author: "Amelie"
-date: "15/03/2022"
 output: html_document
 ---
 
-```{r message = FALSE, warning = FALSE}
+# Influence of *Alliaria petiolata* on plant community ecology 
+#### Amelie Mahrt-Smith, Queen's University, [Github](https://github.com/ameliems99/Metabarcoding)   
+    
+Garlic mustard, *Alliaria petiolata*, is an invasive species in North America. It was purportedly introduced by European settlers in the 1800s. Current research in the [Colautti Lab](https://www.ecoevogeno.org/research.html) at Queen's University seeks to identify the effect of this species on native soil ecology, and whether the introduced populations of *A. petiolata* are more vigorous than in its native range. To learn more about garlic mustard, visit the [Opinicon Natural History Blog](https://opinicon.wordpress.com/2020/06/09/garlic-mustard-alliaria-petiolata-brassicaceae/).   
+   
+This analysis seeks to determine the effect of garlic mustard on plant communities, based on a floristic survey at the Queen’s University Biological Station. More specifically, does the presence of garlic mustard affect plant community composition?   
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 library(dplyr)
 library(ape)
 library(ggtree)
@@ -14,46 +17,48 @@ library(ggplot2)
 library(cowplot)
 source ("./Input/theme_A8.txt")
   theme_set(theme_A8())
-Dat <- read.csv("./Input/FloristicSurvey.csv", header = TRUE) 
-Dat$Location <- recode(Dat$Location, "i" = "Present", "o" = "Absent")
-PlDat <- select(Dat, Claytonia_virginiana:maianthenum_racemosum)  #which plants are present in a sample
-row.names(PlDat) <- Dat$ï..Quadrate  #sample IDs
-```
+```  
 
-1. What effect (if any) does garlic mustard have on the plant community? 
-  -does the presence of garlic mustard change the species that are present? 
-  
 ```{r}
+Dat <- read.csv("./Input/FloristicSurvey.csv", header = TRUE) 
+Dat$Location <- recode(Dat$Location, "i" = "Present", "o" = "Absent")  #is A. petiolata present/absent?
+PlDat <- select(Dat, Claytonia_virginiana:maianthenum_racemosum) %>%  #keep plants present in sample
+  mutate(Alliaria_petiolata = recode(Dat$Location, "Present" = 1, "Absent" = 0))
+row.names(PlDat) <- Dat$ï..Quadrate  #sample IDs
+
 Pl_binary <- PlDat
-Pl_binary[Pl_binary > 0] <- 1  #reformat the data as presence/absence of a plant species in each community
-Pl_dist<- dist(Pl_binary, method = 'binary')
-Pl_tree <- nj(Pl_dist)
+Pl_binary[Pl_binary > 0] <- 1  #reformat data as presence/absence of a plant species in community
+Pl_dist<- dist(Pl_binary, method = 'binary')  #distances btwn communities by species composition
+Pl_tree <- nj(Pl_dist)  #neighbour-joining tree
 ggtree(Pl_tree, layout = 'rectangular') %<+% Dat + 
   geom_tiplab(aes(colour = Location), size = 3.5) + 
   guides(colour = guide_legend(title = expression(italic("A. petiolata"))))
 ```
-
-# make your tree look better 
-
-Evidence is weak that presence/absence of A. petiolata affects the species present in a community (weak clustering) 
-
-
-2. What has a stronger effect on plant community: the presence/absence of garlic mustard or sampling population? 
-```{r}
-#using abundance data...
-Ab_dist <- vegdist(PlDat, method = 'bray', binary = FALSE)
-NMDS <- metaMDS(Ab_dist, k = 2)
-
+      
+**Figure 1.** Clustering of plant communities based on the species present.   
+   
+Garlic mustard has a weak effect on plant community composition. Fig. 1 shows some clustering by presence/absence of *A. petiolata*. This suggests that for groups of plant communities that are broadly similar, the presence of *A. petiolata* can be used to differentiate between them. However, if *A. petiolata* had a biologically relevant impact on plant community composition---i.e., significantly affected the presence/absence of other species---we would expect to see just two distinct clusters of plant communities: an *A. petiolata* present group and an *A. petiolata* absent group.    
+    
+The floristic survey included abundance of plant species in addition to the community composition, which allows for a more in-depth analysis of the factors affecting plant community structure. For example, what has a stronger effect on plant community: the presence/absence of garlic mustard or the sampling population? 
+```{r results = "hide"}
+Ab_dist <- vegdist(PlDat, method = 'bray', binary = FALSE)  #distance btwn communities, by abundance
+NMDS <- metaMDS(Ab_dist, k = 2)  #non-metric multi-dimensional scaling, 2 dimensions
 PDat <- data.frame(NMDS1 = NMDS$points[, 1],
                    NMDS2 = NMDS$points[, 2],
                    SampleID = Dat$ï..Quadrate, 
                    Location = Dat$Location, 
                    Population = as.character(Dat$Population))
 
-P1 <- qplot(x = NMDS1, y = NMDS2, colour = Population, data = PDat)
-P2 <- qplot(x = NMDS1, y = NMDS2, colour = Location, data = PDat)
-plot_grid(P1, P2)
-
+P1 <- qplot(x = NMDS1, y = NMDS2, colour = Population, data = PDat) +  #colour by sampling pop
+  coord_fixed(ratio = 1.5) +  #keep plots square
+  theme(legend.position = "bottom")
+P2 <- qplot(x = NMDS1, y = NMDS2, colour = Location, data = PDat) +  #colour by garlic mustard
+  guides(colour = guide_legend(title = expression(italic("A. petiolata")))) + 
+  coord_fixed(ratio = 1.5) + 
+  theme(legend.position = "bottom")
+plot_grid(P1, P2, labels = c("a", "b"))  #arrange plots in same figure
 ```
-
+    
+**Figure 2.** (a) The influence of population on the similarity of plant communities. (b) The influence of *A. petiolata* on the similarity of plant communities.   
+    
 Population appears to have a stronger influence on plant community than the presence or absence of garlic mustard. The communities in the same population are clustered. 
